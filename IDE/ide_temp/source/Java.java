@@ -1,0 +1,1 @@
+import java.util.*;public class Java{	public static void main(String ar[]){	    Scanner sc=new Scanner("System.in");	    print();	}}

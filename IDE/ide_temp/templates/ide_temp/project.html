@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css" media="screen">
+    #parent {
+    width:70%;
+    height: 40em;
+    display:block;
+
+    position:relative;
+}
+#editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display:block;
+    border-width: thin;
+    font-size: 1em;
+}
+#parent2 {
+    width:70%;
+    display:block;
+    position:relative;
+    font-size: 1em;
+    overflow: scroll;
+    resize: none;
+}
+#stdout{
+resize: none;
+ width:70%;
+ height: 10%;
+ position:relative;
+ font-size: 1em;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+.MyAjaxForm{
+    float: center;
+}
+    </style>
+</head>
+<body>
+
+<div class="container jumbotron">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Bichoo Gang</h2>
+            <select class='form-group'>
+                <option value="java" name="java">Java</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <form class="MyAjaxForm" action="../ide/compile/" method="post">
+            {% csrf_token %}
+            <div id="parent">
+                <input name="code" class='SourceCode' type="text" style="display: none;">
+                <div id="editor"></div>
+            </div>
+            <br>
+            <div><textarea wrap="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                           class="form-control z-depth-1" name="stdin" id="parent2" rows="5"
+                           placeholder="Place std-inputs here"></textarea></div>
+            <br>
+            <div><code><textarea readonly wrap="on" autocorrect="off" autocapitalize="off" spellcheck="false"
+                           class="form-control z-depth-1" name="stdout" id="stdout"
+                                 placeholder="Hidden Output" cols="6"></textarea></code></div>
+            <br>
+            <input type="submit" name="compile-btn" value='compile & Run' class='btn btn-primary compile-btn'>
+        </form>
+        <!--jQuery-->
+        <script
+                src="https://code.jquery.com/jquery-3.4.1.min.js"
+                integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+                crossorigin="anonymous"></script>
+        <!--AJAX-->
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.min.js"
+                integrity="sha256-jfr3oM7h2TWPi2Q0O0vPuRh+pc0eSfWfpZ2nHXt8tFQ=" crossorigin="anonymous"></script>-->
+        <!--BOOTSTRAP CSS-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <!--BOOTSTRAP JS-->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <!--ACE editor JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/ace.js"
+                integrity="sha256-CVkji/u32aj2TeC+D13f7scFSIfphw2pmu4LaKWMSY8=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/ext-language_tools.js"></script>
+        <script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/solarized_dark");
+    editor.session.setMode("ace/mode/java");
+    editor.getSession().setValue("public class Java{\n\tpublic static void main(String ar[]){\n\t}\n}");
+    editor.setOptions({
+    enableBasicAutocompletion: true,
+    enableLiveAutocompletion: true,
+    });
+
+     var input = $('input[name="code"]');
+        editor.getSession().on("change", function () {
+        input.val(editor.getSession().getValue());
+    });
+
+        </script>
+        <script>
+        $(document).ready(function(){
+            //AJAX POST
+            $('.compile-btn').click(function(ev){
+            ev.preventDefault();
+            var source_code, stdinput;
+            stdinput=$('#parent2').val();
+            source_code=$('input[name=code]').val();
+            $.ajax({
+            type : 'post',
+            url : '../ide/compile/',
+            data : { 'code': source_code, 'stdin': stdinput },
+            dataType : 'json',
+            success : function(data){
+                $('#stdout').val(data.output);
+                console.log(data.output);
+            },
+            });
+            });
+        //csrf code
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+
+            function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+});
+
+        </script>
+    </div>
+</div>
+</body>
+</html>

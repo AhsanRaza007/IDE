@@ -1,0 +1,6 @@
+ide_temp\source\Java.java:1: error: cannot find symbol
+import java.util.*;public class Java{	public static void main(String ar[]){	    Scanner sc=new Scanner("System.in");	    print();	}}
+                                     	                                     	                                        	    ^
+  symbol:   method print()
+  location: class Java
+1 error
